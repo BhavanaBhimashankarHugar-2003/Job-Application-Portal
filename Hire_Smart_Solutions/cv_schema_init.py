@@ -80,3 +80,48 @@ CREATE TABLE IF NOT EXISTS mydb.Application(
 );
 """
 
+"""CREATE TRIGGER application_check_qualification
+    -> BEFORE INSERT ON mydb.Application
+    -> FOR EACH ROW
+    -> BEGIN
+    ->   DECLARE job_qualification VARCHAR(45);
+    ->   DECLARE client_qualification VARCHAR(45);
+    ->
+    ->   SELECT Qualification INTO job_qualification FROM mydb.Job WHERE JID = NEW.JID;
+    ->   SELECT CQualification INTO client_qualification FROM mydb.Client WHERE CID = NEW.CID;
+    ->
+    ->   IF job_qualification != client_qualification THEN
+    ->     SIGNAL SQLSTATE '45000'
+    ->     SET MESSAGE_TEXT = 'Client does not have the required qualification for this job';
+    ->   END IF;
+    -> END;
+    -> //
+"""
+
+""" CREATE FUNCTION CalculateAverageSalary( RID integer)
+    -> RETURNS DECIMAL(10, 2)
+    -> READS SQL DATA
+    -> BEGIN
+    ->     DECLARE avg_salary DECIMAL(10, 2);
+    ->
+    ->     SELECT AVG(Salary) INTO avg_salary
+    ->     FROM mydb.Job as j
+    ->     WHERE j.RID = RID;
+    ->
+    ->     RETURN avg_salary;
+    -> END //"""
+
+"""DELIMITER //
+
+CREATE PROCEDURE GetRecruiterJobCount(job_type VARCHAR(45))
+READS SQL DATA
+BEGIN
+    -- Use a nested query with JOIN to get recruiter information and job count
+    SELECT r.RName, r.REmail, COUNT(j.JID) AS TotalJobs
+    FROM mydb.Recruiter r
+    LEFT JOIN mydb.Job j ON r.RID = j.RID
+    WHERE j.JobType = job_type OR j.JobType IS NULL
+    GROUP BY r.RID;
+END //
+
+DELIMITER ;"""
